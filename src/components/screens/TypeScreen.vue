@@ -7,10 +7,10 @@ const { mascotSpeech, mascotMouthClass, onMascotClick } = useMascot()
 const { showScreen } = useNavigation()
 
 const OPERATORS = [
-  { id: 'add', symbol: '+', label: 'Penjumlahan', emoji: '➕' },
-  { id: 'subtract', symbol: '-', label: 'Pengurangan', emoji: '➖' },
-  { id: 'multiply', symbol: '×', label: 'Perkalian', emoji: '✖️' },
-  { id: 'divide', symbol: '÷', label: 'Pembagian', emoji: '➗' },
+  { id: 'add', label: 'Penjumlahan', emoji: '➕' },
+  { id: 'subtract', label: 'Pengurangan', emoji: '➖' },
+  { id: 'multiply', label: 'Perkalian', emoji: '✖️' },
+  { id: 'divide', label: 'Pembagian', emoji: '➗' },
 ]
 </script>
 
@@ -31,7 +31,7 @@ const OPERATORS = [
           style="min-width:160px;"
           @click="showScreen('screen-level')"
         >
-          {{ op.emoji }} {{ op.symbol }}<br><small style="font-weight:400;">{{ op.label }}</small>
+          {{ op.emoji }}<br><small style="font-weight:400;">{{ op.label }}</small>
         </button>
       </div>
       <button class="btn btn-accent" @click="showScreen('screen-mode')" style="margin-top:8px;">⬅ Kembali</button>
