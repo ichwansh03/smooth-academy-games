@@ -14,11 +14,16 @@ public class LevelService {
     @Inject
     LevelRepository levelRepository;
 
+    @Inject
+    SeedService seedService;
+
     public List<Level> listAll() {
+        seedService.seed();
         return levelRepository.list("ORDER BY sortOrder");
     }
 
     public Level findById(Integer id) {
+        seedService.seed();
         return levelRepository.findByIdOptional(id)
                 .orElseThrow(() -> new WebApplicationException(404));
     }
