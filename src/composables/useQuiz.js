@@ -252,16 +252,21 @@ export function useQuiz() {
     }
 
     if (isLoggedIn.value) {
+      const payload = {
+        userId: currentUser.value.id,
+        levelId: currentLevelId.value,
+        mode: currentMode.value,
+        totalQuestions: TOTAL_QUESTIONS,
+        correctCount: correct,
+      }
       try {
-        await api.submitQuizResult({
-          userId: currentUser.value.id,
-          levelId: currentLevelId.value,
-          mode: currentMode.value,
-          totalQuestions: TOTAL_QUESTIONS,
-          correctCount: correct,
-        })
+        console.log('[quiz] saving result', payload)
+        await api.submitQuizResult(payload)
+        console.log('[quiz] result saved OK')
         await fetchStarsFromApi(currentUser.value.id)
-      } catch { /* ignore */ }
+      } catch (err) {
+        console.error('[quiz] save result FAILED:', err.status || '', err.message || err)
+      }
     }
 
     showScreen('screen-result')

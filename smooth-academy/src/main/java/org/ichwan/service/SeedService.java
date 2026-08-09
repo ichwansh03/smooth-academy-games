@@ -1,6 +1,5 @@
 package org.ichwan.service;
 
-import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -13,9 +12,8 @@ public class SeedService {
     @Inject
     LevelRepository levelRepository;
 
-    @PostConstruct
     @Transactional
-    void seed() {
+    public void seed() {
         if (levelRepository.count() > 0) return;
 
         levelRepository.persist(Level.builder().id(1).name("Ones Star").icon("🌟").label("1–9").minRange(1).maxRange(9).requiredStars(0).sortOrder(1).build());
