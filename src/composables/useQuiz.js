@@ -112,7 +112,7 @@ export function useQuiz() {
 
   function selectMode(mode) {
     currentMode.value = mode
-    showScreen('screen-level')
+    showScreen('screen-type')
   }
 
   function startQuiz(levelId) {

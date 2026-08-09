@@ -2,6 +2,7 @@
 import MenuScreen from './components/screens/MenuScreen.vue'
 import LoginScreen from './components/screens/LoginScreen.vue'
 import ModeScreen from './components/screens/ModeScreen.vue'
+import TypeScreen from './components/screens/TypeScreen.vue'
 import LevelScreen from './components/screens/LevelScreen.vue'
 import QuizScreen from './components/screens/QuizScreen.vue'
 import ResultScreen from './components/screens/ResultScreen.vue'
@@ -21,6 +22,7 @@ loadSavedUser()
       <MenuScreen v-if="currentScreen === 'screen-menu'" key="menu" />
       <LoginScreen v-else-if="currentScreen === 'screen-login'" key="login" />
       <ModeScreen v-else-if="currentScreen === 'screen-mode'" key="mode" />
+      <TypeScreen v-else-if="currentScreen === 'screen-type'" key="type" />
       <LevelScreen v-else-if="currentScreen === 'screen-level'" key="level" />
       <QuizScreen v-else-if="currentScreen === 'screen-quiz'" key="quiz" />
       <ResultScreen v-else-if="currentScreen === 'screen-result'" key="result" />
