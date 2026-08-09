@@ -24,10 +24,23 @@ export function useAuth() {
         const u = JSON.parse(raw)
         currentUser.value = u
         fetchStarsFromApi(u.id)
+        validateSavedUser(u)
         return true
       }
     } catch { /* ignore */ }
     return false
+  }
+
+  async function validateSavedUser(u) {
+    try {
+      await api.getUser(u.id)
+    } catch (err) {
+      if (err.status === 404) {
+        currentUser.value = null
+        localStorage.removeItem('jarimatika_user')
+        showScreen('screen-menu')
+      }
+    }
   }
 
   async function handleRegister() {
