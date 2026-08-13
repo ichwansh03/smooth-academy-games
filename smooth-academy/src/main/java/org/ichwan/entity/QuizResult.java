@@ -31,6 +31,9 @@ public class QuizResult {
     @Column(nullable = false)
     private String mode;
 
+    @Column(nullable = true)
+    private String operator;
+
     @Column(name = "total_questions", nullable = false)
     private int totalQuestions;
 

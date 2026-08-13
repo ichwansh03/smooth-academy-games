@@ -25,7 +25,7 @@ public class QuizService {
     LevelService levelService;
 
     @Transactional
-    public QuizResult submitResult(UUID userId, Integer levelId, String mode,
+    public QuizResult submitResult(UUID userId, Integer levelId, String mode, String operator,
                                    Integer totalQuestions, Integer correctCount) {
         User user = userService.findById(userId);
         Level level = levelService.findById(levelId);
@@ -43,6 +43,7 @@ public class QuizService {
                 .user(user)
                 .level(level)
                 .mode(mode)
+                .operator(operator != null ? operator : "add")
                 .totalQuestions(totalQuestions)
                 .correctCount(correctCount)
                 .percentage(percentage)

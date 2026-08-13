@@ -33,6 +33,7 @@ public class QuizResource {
                     UUID.fromString(body.get("userId").toString()),
                     Integer.valueOf(body.get("levelId").toString()),
                     body.get("mode").toString(),
+                    body.get("operator") != null ? body.get("operator").toString() : "add",
                     Integer.valueOf(body.get("totalQuestions").toString()),
                     Integer.valueOf(body.get("correctCount").toString()));
             LOG.infof("Quiz result saved id=%s userId=%s", result.getId(), body.get("userId"));
