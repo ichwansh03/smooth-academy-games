@@ -12,6 +12,8 @@ const { currentUser, goToPlay } = useAuth()
 const {
   reportLoading,
   reportResults,
+  reportFilter,
+  filteredReportResults,
   reportAverage,
   reportBest,
   reportTotalAttempts,
@@ -19,6 +21,7 @@ const {
   formatReportDate,
   reportModeLabel,
   reportModeColor,
+  reportOperatorLabel,
   loadReport,
 } = useReport()
 
@@ -44,6 +47,23 @@ onMounted(loadReport)
         </div>
 
         <template v-else>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:10px 0;">
+            <button
+              v-for="f in [['all','Semua'],['add','➕ Penjumlahan'],['subtract','➖ Pengurangan'],['multiply','✖️ Perkalian'],['divide','➗ Pembagian']]"
+              :key="f[0]"
+              class="btn"
+              :style="reportFilter === f[0]
+                ? 'background:var(--primary);color:#fff;border:2px solid var(--primary);padding:6px 12px;font-size:0.8rem;'
+                : 'background:#fff;color:var(--text);border:2px solid #E0D8D0;padding:6px 12px;font-size:0.8rem;'"
+              @click="reportFilter = f[0]"
+            >{{ f[1] }}</button>
+          </div>
+
+          <div v-if="filteredReportResults.length === 0" style="margin:16px 0;font-weight:700;color:#888;">
+            Belum ada latihan untuk jenis ini. 🎮
+          </div>
+
+          <div v-else>
           <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin:12px 0;">
             <div style="flex:1;min-width:110px;background:linear-gradient(135deg,#FFF9E6,#FFECD2);border:3px solid #FFD700;border-radius:18px;padding:12px 10px;text-align:center;">
               <div style="font-size:0.8rem;font-weight:700;color:#888;">Rata-rata</div>
@@ -68,13 +88,14 @@ onMounted(loadReport)
           </div>
 
           <div style="max-height:300px;overflow-y:auto;width:100%;display:flex;flex-direction:column;gap:8px;margin-top:10px;padding-right:4px;">
-            <div v-for="(r, idx) in reportResults" :key="r.id || idx"
+            <div v-for="(r, idx) in filteredReportResults" :key="r.id || idx"
               style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;background:#FAF5F0;border-radius:14px;padding:10px 14px;border:2px solid #F0E8E0;">
               <div style="font-weight:800;color:var(--text);font-size:0.95rem;">
                 {{ r.level ? r.level.icon + ' ' + r.level.name : 'Level ' + (r.levelId || '?') }}
               </div>
               <div style="font-weight:700;font-size:0.8rem;color:var(--text);">
                 <span :style="{ color: reportModeColor(r.mode) }">{{ reportModeLabel(r.mode) }}</span>
+                <span style="color:#A78BFA;"> · {{ reportOperatorLabel(r.operator) }}</span>
                 · {{ r.correctCount }}/{{ r.totalQuestions }} · {{ Number(r.percentage) }}%
               </div>
               <div style="display:flex;align-items:center;gap:6px;">
@@ -82,6 +103,7 @@ onMounted(loadReport)
                 <span style="font-size:0.75rem;color:#999;">{{ formatReportDate(r.createdAt) }}</span>
               </div>
             </div>
+          </div>
           </div>
         </template>
       </template>

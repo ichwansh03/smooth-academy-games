@@ -2,9 +2,11 @@
 import MascotDisplay from '../MascotDisplay.vue'
 import { useMascot } from '../../composables/useMascot.js'
 import { useNavigation } from '../../composables/useNavigation.js'
+import { useQuiz } from '../../composables/useQuiz.js'
 
 const { mascotSpeech, mascotMouthClass, onMascotClick } = useMascot()
 const { showScreen } = useNavigation()
+const { selectOperator } = useQuiz()
 
 const OPERATORS = [
   { id: 'add', label: 'Penjumlahan', emoji: '➕' },
@@ -29,7 +31,7 @@ const OPERATORS = [
           :key="op.id"
           class="btn btn-secondary btn-large"
           style="min-width:160px;"
-          @click="showScreen('screen-level')"
+          @click="selectOperator(op.id)"
         >
           {{ op.emoji }}<br><small style="font-weight:400;">{{ op.label }}</small>
         </button>

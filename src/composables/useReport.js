@@ -4,6 +4,7 @@ import { useAuth } from './useAuth.js'
 
 const reportResults = ref([])
 const reportLoading = ref(false)
+const reportFilter = ref('all')
 
 export function useReport() {
   const { currentUser } = useAuth()
@@ -20,17 +21,22 @@ export function useReport() {
     }
   }
 
-  const reportTotalAttempts = computed(() => reportResults.value.length)
+  const filteredReportResults = computed(() => {
+    if (reportFilter.value === 'all') return reportResults.value
+    return reportResults.value.filter(r => (r.operator || 'add') === reportFilter.value)
+  })
+
+  const reportTotalAttempts = computed(() => filteredReportResults.value.length)
 
   const reportAverage = computed(() => {
-    if (!reportResults.value.length) return 0
-    const sum = reportResults.value.reduce((acc, r) => acc + Number(r.percentage || 0), 0)
-    return Math.round((sum / reportResults.value.length) * 100) / 100
+    if (!filteredReportResults.value.length) return 0
+    const sum = filteredReportResults.value.reduce((acc, r) => acc + Number(r.percentage || 0), 0)
+    return Math.round((sum / filteredReportResults.value.length) * 100) / 100
   })
 
   const reportBest = computed(() => {
-    if (!reportResults.value.length) return 0
-    return Math.max(...reportResults.value.map(r => Number(r.percentage || 0)))
+    if (!filteredReportResults.value.length) return 0
+    return Math.max(...filteredReportResults.value.map(r => Number(r.percentage || 0)))
   })
 
   const reportGrade = computed(() => {
@@ -58,9 +64,20 @@ export function useReport() {
     return mode === 'challenge' ? 'var(--primary)' : 'var(--green)'
   }
 
+  function reportOperatorLabel(op) {
+    switch (op || 'add') {
+      case 'subtract': return '➖ Pengurangan'
+      case 'multiply': return '✖️ Perkalian'
+      case 'divide': return '➗ Pembagian'
+      default: return '➕ Penjumlahan'
+    }
+  }
+
   return {
     reportResults,
     reportLoading,
+    reportFilter,
+    filteredReportResults,
     loadReport,
     reportTotalAttempts,
     reportAverage,
@@ -69,5 +86,6 @@ export function useReport() {
     formatReportDate,
     reportModeLabel,
     reportModeColor,
+    reportOperatorLabel,
   }
 }

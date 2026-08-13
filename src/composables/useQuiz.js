@@ -11,6 +11,7 @@ import { useMascot } from './useMascot.js'
 import { useNavigation } from './useNavigation.js'
 
 const currentMode = ref('practice')
+const currentOperator = ref('add')
 const currentLevelId = ref(1)
 const currentQuestionIndex = ref(0)
 const correctCount = ref(0)
@@ -113,6 +114,11 @@ export function useQuiz() {
   function selectMode(mode) {
     currentMode.value = mode
     showScreen('screen-type')
+  }
+
+  function selectOperator(operatorId) {
+    currentOperator.value = operatorId
+    showScreen('screen-level')
   }
 
   function startQuiz(levelId) {
@@ -256,6 +262,7 @@ export function useQuiz() {
         userId: currentUser.value.id,
         levelId: currentLevelId.value,
         mode: currentMode.value,
+        operator: currentOperator.value,
         totalQuestions: TOTAL_QUESTIONS,
         correctCount: correct,
       }
@@ -300,6 +307,7 @@ export function useQuiz() {
 
   return {
     currentMode,
+    currentOperator,
     currentLevelId,
     starsEarned,
     quizCardWiggle,
@@ -322,6 +330,7 @@ export function useQuiz() {
     quizModeLabel,
     quizModeColor,
     selectMode,
+    selectOperator,
     startQuiz,
     optionClass,
     dotClass,
