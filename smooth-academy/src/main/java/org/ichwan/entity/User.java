@@ -30,6 +30,9 @@ public class User {
     @Builder.Default
     private boolean isPremium = false;
 
+    @Column(name = "premium_operators")
+    private String premiumOperators;
+
     @Column(name = "premium_subscribed_at")
     private Instant premiumSubscribedAt;
 

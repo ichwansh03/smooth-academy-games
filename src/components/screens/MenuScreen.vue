@@ -6,7 +6,7 @@ import { useAuth } from '../../composables/useAuth.js'
 
 const { mascotSpeech, mascotMouthClass, onMascotClick } = useMascot()
 const { showScreen } = useNavigation()
-const { currentUser, isLoggedIn, logout, goToPlay } = useAuth()
+const { currentUser, isLoggedIn, subscriptionBadge, logout, goToPlay } = useAuth()
 </script>
 
 <template>
@@ -24,8 +24,16 @@ const { currentUser, isLoggedIn, logout, goToPlay } = useAuth()
         <button v-if="isLoggedIn" class="btn btn-secondary btn-large" @click="showScreen('screen-report')">📊 Laporanku</button>
       </div>
       <div v-if="isLoggedIn" style="margin-top:12px;font-size:0.85rem;color:#888;">
-        👤 {{ currentUser.displayName }} ({{ currentUser.email }})
-        <button class="btn btn-accent" style="padding:6px 16px;font-size:0.8rem;margin-left:8px;" @click="logout()">Logout</button>
+        <div style="font-weight:800;color:var(--text);background:#FFF4E6;border:2px solid #FFD700;border-radius:20px;padding:6px 14px;display:inline-block;">
+          {{ subscriptionBadge }}
+        </div>
+        <div style="margin-top:8px;">
+          👤 {{ currentUser.displayName }} ({{ currentUser.email }})
+          <button class="btn btn-accent" style="padding:6px 16px;font-size:0.8rem;margin-left:8px;" @click="logout()">Logout</button>
+        </div>
+      </div>
+      <div v-else style="margin-top:12px;font-size:0.85rem;color:#888;font-weight:700;">
+        {{ subscriptionBadge }} — daftar/masuk untuk bermain
       </div>
     </div>
   </div>
