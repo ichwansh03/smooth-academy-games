@@ -11,11 +11,59 @@ const loginName = ref('')
 const loginLoading = ref(false)
 const loginError = ref('')
 
+const OPERATOR_IDS = ['add', 'subtract', 'multiply', 'divide']
+const OPERATOR_LABELS = {
+  add: '➕ Penjumlahan',
+  subtract: '➖ Pengurangan',
+  multiply: '✖️ Perkalian',
+  divide: '➗ Pembagian',
+}
+
+function toSessionUser(u) {
+  return {
+    id: u.id,
+    email: u.email,
+    displayName: u.displayName,
+    premium: !!u.premium,
+    premiumOperators: u.premiumOperators || null,
+  }
+}
+
 export function useAuth() {
   const { showScreen } = useNavigation()
   const { fetchStarsFromApi } = useStars()
 
   const isLoggedIn = computed(() => currentUser.value !== null)
+
+  const userTier = computed(() => (currentUser.value && currentUser.value.premium) ? 'premium' : 'guest')
+
+  const unlockedOperators = computed(() => {
+    const u = currentUser.value
+    if (!u || !u.premium) return ['add']
+    const list = (u.premiumOperators || '').split(',').map(s => s.trim()).filter(Boolean)
+    return list.length ? list : OPERATOR_IDS
+  })
+
+  function isOperatorUnlocked(op) {
+    return unlockedOperators.value.includes(op)
+  }
+
+  function isLevelAccessible(op, levelId) {
+    if (!isOperatorUnlocked(op)) return false
+    if (!currentUser.value || !currentUser.value.premium) return levelId <= 2
+    return true
+  }
+
+  const subscriptionBadge = computed(() => {
+    const u = currentUser.value
+    if (!u) return '🟡 Guest — ➕ Penjumlahan (Satuan & Puluhan)'
+    if (!u.premium) return '🟡 Guest — ➕ Penjumlahan (Satuan & Puluhan)'
+    const ops = unlockedOperators.value
+    const labels = ops.length >= OPERATOR_IDS.length
+      ? 'Semua Jenis Latihan'
+      : ops.map(o => OPERATOR_LABELS[o] || o).join(', ')
+    return '👑 Premium — ' + labels
+  })
 
   function loadSavedUser() {
     try {
@@ -33,7 +81,10 @@ export function useAuth() {
 
   async function validateSavedUser(u) {
     try {
-      await api.getUser(u.id)
+      const fresh = await api.getUser(u.id)
+      currentUser.value = toSessionUser(fresh)
+      localStorage.setItem('jarimatika_user', JSON.stringify(currentUser.value))
+      fetchStarsFromApi(fresh.id)
     } catch (err) {
       if (err.status === 404) {
         currentUser.value = null
@@ -59,7 +110,7 @@ export function useAuth() {
     loginError.value = ''
     try {
       const user = await api.registerUser(email, password, displayName)
-      currentUser.value = { id: user.id, email: user.email, displayName: user.displayName }
+      currentUser.value = toSessionUser(user)
       localStorage.setItem('jarimatika_user', JSON.stringify(currentUser.value))
       await fetchStarsFromApi(user.id)
       showScreen('screen-mode')
@@ -88,7 +139,7 @@ export function useAuth() {
     loginError.value = ''
     try {
       const user = await api.loginUser(email, password)
-      currentUser.value = { id: user.id, email: user.email, displayName: user.displayName }
+      currentUser.value = toSessionUser(user)
       localStorage.setItem('jarimatika_user', JSON.stringify(currentUser.value))
       await fetchStarsFromApi(user.id)
       showScreen('screen-mode')
@@ -123,6 +174,11 @@ export function useAuth() {
   return {
     currentUser,
     isLoggedIn,
+    userTier,
+    unlockedOperators,
+    isOperatorUnlocked,
+    isLevelAccessible,
+    subscriptionBadge,
     loginTab,
     loginEmail,
     loginPassword,
