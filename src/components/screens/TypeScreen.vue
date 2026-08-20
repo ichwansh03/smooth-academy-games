@@ -33,17 +33,19 @@ const OPERATORS = [
           :key="op.id"
           class="btn btn-large"
           :style="isOperatorUnlocked(op.id)
-            ? 'min-width:160px;background:#FFF7E6;border:3px solid #FFD700;color:var(--text);'
-            : 'min-width:160px;background:#F0ECE6;border:3px solid #DDD5CB;color:#999;cursor:not-allowed;'"
+            ? 'min-width:160px;background:linear-gradient(135deg,#FFF7E6,#FFECD2);border:3px solid #FFD700;color:var(--text);'
+            : 'min-width:160px;background:linear-gradient(135deg,#F5F5F5,#E8E8E8);border:3px solid #DDD;color:#AAA;cursor:not-allowed;'"
           :disabled="!isOperatorUnlocked(op.id)"
           @click="isOperatorUnlocked(op.id) && selectOperator(op.id)"
         >
           <template v-if="isOperatorUnlocked(op.id)">
-            {{ op.emoji }} {{ op.symbol }}<br><small style="font-weight:400;">{{ op.label }}</small>
+            <div style="font-size:1.8rem;">{{ op.emoji }}</div>
+            <div style="font-weight:800;font-size:1rem;">{{ op.label }}</div>
           </template>
           <template v-else>
-            🔒<br><small style="font-weight:400;">{{ op.label }}</small><br>
-            <small style="font-weight:700;color:#A78BFA;">Khusus Premium</small>
+            <div style="font-size:1.8rem;">🔒</div>
+            <div style="font-weight:800;font-size:1rem;">{{ op.label }}</div>
+            <div style="font-weight:700;color:#A78BFA;font-size:0.7rem;margin-top:2px;">Khusus Premium</div>
           </template>
         </button>
       </div>

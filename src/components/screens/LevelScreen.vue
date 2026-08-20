@@ -34,7 +34,14 @@ function levelLocked(lvl) {
         @mascot-click="onMascotClick"
       />
       <h2 style="font-size:1.4rem;color:var(--text);">Pilih Level</h2>
-      <span :style="{ fontWeight: 700, color: 'var(--primary)', background: '#FFF0F0', padding: '6px 16px', borderRadius: '20px', fontSize: '0.9rem' }">{{ modeBadgeText }} · {{ OPERATOR_LABELS[currentOperator] }}</span>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:8px 0;">
+        <span :style="{ fontWeight:700, background:'#FFF0F0', padding:'5px 12px', borderRadius:'16px', fontSize:'0.8rem', color:'var(--primary)' }">
+          {{ modeBadgeText }}
+        </span>
+        <span :style="{ fontWeight:700, background:'#F0E6FF', padding:'5px 12px', borderRadius:'16px', fontSize:'0.8rem', color:'#7C3AED' }">
+          {{ OPERATOR_LABELS[currentOperator] }}
+        </span>
+      </div>
       <div class="level-grid">
         <div v-for="lvl in LEVELS" :key="lvl.id"
           :class="['level-card', { locked: levelLocked(lvl) }]"
