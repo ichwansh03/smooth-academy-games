@@ -12,6 +12,15 @@ const OPERATOR_LABELS = {
   subtract: '➖ Pengurangan',
   multiply: '✖️ Perkalian',
   divide: '➗ Pembagian',
+  campuran: '🔀 Campuran',
+}
+
+const ALLOWED_LEVELS = {
+  add: [1, 2, 3, 4],
+  subtract: [1, 2, 3, 4],
+  multiply: [1, 2, 3, 4],
+  divide: [1, 2, 3, 4],
+  campuran: [1, 2],
 }
 
 const { mascotSpeech, mascotMouthClass, onMascotClick } = useMascot()
@@ -21,7 +30,8 @@ const { currentOperator, modeBadgeText, startQuiz } = useQuiz()
 const { isLevelAccessible } = useAuth()
 
 function levelLocked(lvl) {
-  return !isLevelAccessible(currentOperator.value, lvl.id) || !isLevelUnlocked(lvl.id)
+  const allowed = ALLOWED_LEVELS[currentOperator.value] || [1, 2, 3, 4]
+  return !allowed.includes(lvl.id) || !isLevelAccessible(currentOperator.value, lvl.id) || !isLevelUnlocked(lvl.id)
 }
 </script>
 

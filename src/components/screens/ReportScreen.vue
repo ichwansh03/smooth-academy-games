@@ -49,7 +49,7 @@ onMounted(loadReport)
         <template v-else>
           <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:10px 0;">
             <button
-              v-for="f in [['all','Semua'],['add','➕ Penjumlahan'],['subtract','➖ Pengurangan'],['multiply','✖️ Perkalian'],['divide','➗ Pembagian']]"
+              v-for="f in [['all','Semua'],['add','➕ Penjumlahan'],['subtract','➖ Pengurangan'],['multiply','✖️ Perkalian'],['divide','➗ Pembagian'],['campuran','🔀 Campuran']]"
               :key="f[0]"
               class="btn"
               :style="reportFilter === f[0]

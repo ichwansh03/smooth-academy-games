@@ -11,12 +11,13 @@ const loginName = ref('')
 const loginLoading = ref(false)
 const loginError = ref('')
 
-const OPERATOR_IDS = ['add', 'subtract', 'multiply', 'divide']
+const OPERATOR_IDS = ['add', 'subtract', 'multiply', 'divide', 'campuran']
 const OPERATOR_LABELS = {
   add: '➕ Penjumlahan',
   subtract: '➖ Pengurangan',
   multiply: '✖️ Perkalian',
   divide: '➗ Pembagian',
+  campuran: '🔀 Campuran',
 }
 
 function toSessionUser(u) {

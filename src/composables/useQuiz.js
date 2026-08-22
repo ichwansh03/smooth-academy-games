@@ -62,8 +62,10 @@ export function useQuiz() {
   const handDisplayHtml = computed(() => {
     const q = currentQuestion.value
     if (!q) return ''
+    const opSymbol = { add: '+', subtract: '-', multiply: '×', divide: '÷' }
+    const symbol = opSymbol[q.op] || '+'
     return renderHandsForNumber(q.a) +
-      '<span class="operator-symbol">+</span>' +
+      `<span class="operator-symbol">${symbol}</span>` +
       renderHandsForNumber(q.b) +
       '<span class="equals-symbol">=</span>' +
       '<span class="question-mark">?</span>'
@@ -125,7 +127,7 @@ export function useQuiz() {
     currentLevelId.value = levelId
     currentQuestionIndex.value = 0
     correctCount.value = 0
-    questions.value = generateQuestions(levelId, TOTAL_QUESTIONS)
+    questions.value = generateQuestions(levelId, TOTAL_QUESTIONS, currentOperator.value)
     answered.value = false
     selectedOption.value = null
     timerSeconds.value = 30
