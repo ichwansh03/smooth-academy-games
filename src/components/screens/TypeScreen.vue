@@ -15,6 +15,7 @@ const OPERATORS = [
   { id: 'subtract', label: 'Pengurangan', emoji: '➖' },
   { id: 'multiply', label: 'Perkalian', emoji: '✖️' },
   { id: 'divide', label: 'Pembagian', emoji: '➗' },
+  { id: 'campuran', label: 'Campuran', emoji: '🔀' },
 ]
 </script>
 
