@@ -69,6 +69,7 @@ export function useReport() {
       case 'subtract': return '➖ Pengurangan'
       case 'multiply': return '✖️ Perkalian'
       case 'divide': return '➗ Pembagian'
+      case 'hybrid': return '🔀 Campuran'
       default: return '➕ Penjumlahan'
     }
   }

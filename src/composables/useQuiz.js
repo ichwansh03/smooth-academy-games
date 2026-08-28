@@ -25,7 +25,7 @@ const starsEarned = ref(0)
 
 export function useQuiz() {
   const { currentUser, isLoggedIn } = useAuth()
-  const { stars, saveLocalStars, fetchStarsFromApi } = useStars()
+  const { setStars, fetchStarsFromApi } = useStars()
   const { mascotSpeech, mascotMouthClass } = useMascot()
   const { showScreen } = useNavigation()
 
@@ -63,6 +63,17 @@ export function useQuiz() {
     const q = currentQuestion.value
     if (!q) return ''
     const opSymbol = { add: '+', subtract: '-', multiply: '×', divide: '÷' }
+    if (q.isHybrid) {
+      const sym1 = opSymbol[q.op1] || '+'
+      const sym2 = opSymbol[q.op2] || '+'
+      return renderHandsForNumber(q.a) +
+        `<span class="operator-symbol">${sym1}</span>` +
+        renderHandsForNumber(q.b) +
+        `<span class="operator-symbol">${sym2}</span>` +
+        renderHandsForNumber(q.c) +
+        '<span class="equals-symbol">=</span>' +
+        '<span class="question-mark">?</span>'
+    }
     const symbol = opSymbol[q.op] || '+'
     return renderHandsForNumber(q.a) +
       `<span class="operator-symbol">${symbol}</span>` +
@@ -253,11 +264,7 @@ export function useQuiz() {
     else if (percentage >= 50) earned = 1
     starsEarned.value = earned
 
-    const prevStars = stars.value[currentLevelId.value] || 0
-    if (earned > prevStars) {
-      stars.value[currentLevelId.value] = earned
-      saveLocalStars(stars.value)
-    }
+    setStars(currentLevelId.value, currentOperator.value, earned)
 
     if (isLoggedIn.value) {
       const payload = {

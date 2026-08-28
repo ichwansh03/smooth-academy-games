@@ -12,7 +12,7 @@ const OPERATOR_LABELS = {
   subtract: '➖ Pengurangan',
   multiply: '✖️ Perkalian',
   divide: '➗ Pembagian',
-  campuran: '🔀 Campuran',
+  hybrid: '🔀 Campuran',
 }
 
 const ALLOWED_LEVELS = {
@@ -20,18 +20,22 @@ const ALLOWED_LEVELS = {
   subtract: [1, 2, 3, 4],
   multiply: [1, 2, 3, 4],
   divide: [1, 2, 3, 4],
-  campuran: [1, 2],
+  hybrid: [1, 2, 3, 4],
 }
 
 const { mascotSpeech, mascotMouthClass, onMascotClick } = useMascot()
 const { showScreen } = useNavigation()
-const { stars, isLevelUnlocked } = useStars()
+const { getStars, isLevelUnlocked } = useStars()
 const { currentOperator, modeBadgeText, startQuiz } = useQuiz()
 const { isLevelAccessible } = useAuth()
 
 function levelLocked(lvl) {
   const allowed = ALLOWED_LEVELS[currentOperator.value] || [1, 2, 3, 4]
   return !allowed.includes(lvl.id) || !isLevelAccessible(currentOperator.value, lvl.id) || !isLevelUnlocked(lvl.id)
+}
+
+function getLevelStars(lvl) {
+  return getStars(lvl.id, currentOperator.value)
 }
 </script>
 
@@ -61,8 +65,8 @@ function levelLocked(lvl) {
           <div class="level-range">🔢 {{ lvl.label }}</div>
           <div class="level-stars">
             <span v-for="s in 3" :key="s"
-              :class="['star', { earned: s <= (stars[lvl.id] || 0) }]">
-              {{ s <= (stars[lvl.id] || 0) ? '⭐' : '☆' }}
+              :class="['star', { earned: s <= getLevelStars(lvl) }]">
+              {{ s <= getLevelStars(lvl) ? '⭐' : '☆' }}
             </span>
           </div>
           <div v-if="levelLocked(lvl)" class="lock-icon">🔒</div>
