@@ -57,3 +57,28 @@ export function getUserResults(userId) {
 export function getQuizResult(id) {
   return request(`/quiz-results/${id}`)
 }
+
+export function getUserOperators(userId) {
+  return request(`/users/${userId}/operators`)
+}
+
+export function setUserOperators(userId, operators) {
+  return request(`/users/${userId}/operators`, {
+    method: 'PUT',
+    body: JSON.stringify({ operators }),
+  })
+}
+
+export function grantOperator(userId, operator) {
+  return request(`/users/${userId}/operators/grant`, {
+    method: 'POST',
+    body: JSON.stringify({ operator }),
+  })
+}
+
+export function revokeOperator(userId, operator) {
+  return request(`/users/${userId}/operators/revoke`, {
+    method: 'POST',
+    body: JSON.stringify({ operator }),
+  })
+}

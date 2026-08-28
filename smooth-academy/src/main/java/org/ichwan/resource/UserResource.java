@@ -5,10 +5,12 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.ichwan.entity.OperatorType;
 import org.ichwan.entity.User;
 import org.ichwan.service.UserService;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -61,5 +63,59 @@ public class UserResource {
     @Path("/{id}")
     public User getUser(@PathParam("id") UUID id) {
         return userService.findById(id);
+    }
+
+    @GET
+    @Path("/{id}/operators")
+    public List<String> getUserOperators(@PathParam("id") UUID id) {
+        userService.findById(id);
+        return userService.getOperators(id);
+    }
+
+    @PUT
+    @Path("/{id}/operators")
+    public Response setUserOperators(@PathParam("id") UUID id, Map<String, List<String>> body) {
+        User user = userService.findById(id);
+        List<String> ops = body.get("operators");
+        if (ops == null) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+        List<OperatorType> operators = ops.stream()
+                .map(op -> {
+                    try {
+                        return OperatorType.valueOf(op.toUpperCase());
+                    } catch (IllegalArgumentException e) {
+                        throw new WebApplicationException("Invalid operator: " + op, Response.Status.BAD_REQUEST);
+                    }
+                })
+                .toList();
+        userService.setOperators(user, operators);
+        return Response.ok(Map.of("operators", userService.getOperators(id))).build();
+    }
+
+    @POST
+    @Path("/{id}/operators/grant")
+    public Response grantOperator(@PathParam("id") UUID id, Map<String, String> body) {
+        User user = userService.findById(id);
+        try {
+            OperatorType op = OperatorType.valueOf(body.get("operator").toUpperCase());
+            userService.grantOperator(user, op);
+            return Response.ok(Map.of("operators", userService.getOperators(id))).build();
+        } catch (IllegalArgumentException e) {
+            throw new WebApplicationException("Invalid operator", Response.Status.BAD_REQUEST);
+        }
+    }
+
+    @POST
+    @Path("/{id}/operators/revoke")
+    public Response revokeOperator(@PathParam("id") UUID id, Map<String, String> body) {
+        User user = userService.findById(id);
+        try {
+            OperatorType op = OperatorType.valueOf(body.get("operator").toUpperCase());
+            userService.revokeOperator(user, op);
+            return Response.ok(Map.of("operators", userService.getOperators(id))).build();
+        } catch (IllegalArgumentException e) {
+            throw new WebApplicationException("Invalid operator", Response.Status.BAD_REQUEST);
+        }
     }
 }

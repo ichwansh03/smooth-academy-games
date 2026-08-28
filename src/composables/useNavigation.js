@@ -7,6 +7,7 @@ const SCREEN_SPEECH = {
   'screen-menu': 'Halo! Ayo belajar <strong>Jarimatika</strong> bersamaku! 🖐️✨',
   'screen-login': 'Halo! Ayo daftar atau masuk! 😊',
   'screen-mode': 'Pilih mode bermainmu ya! 😊',
+  'screen-type': 'Pilih jenis latihan yang mau dimainkan! 🎯',
   'screen-level': 'Pilih level bintangmu! ⭐',
   'screen-report': 'Ini laporan belajarmu! 📊',
 }
