@@ -26,19 +26,6 @@ public class User {
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
-    @Column(name = "is_premium", nullable = false)
-    @Builder.Default
-    private boolean isPremium = false;
-
-    @Column(name = "premium_operators")
-    private String premiumOperators;
-
-    @Column(name = "premium_subscribed_at")
-    private Instant premiumSubscribedAt;
-
-    @Column(name = "premium_expires_at")
-    private Instant premiumExpiresAt;
-
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 

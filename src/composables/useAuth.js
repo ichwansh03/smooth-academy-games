@@ -4,6 +4,7 @@ import { useNavigation } from './useNavigation.js'
 import { useStars } from './useStars.js'
 
 const currentUser = ref(null)
+const userOperators = ref([])
 const loginTab = ref('login')
 const loginEmail = ref('')
 const loginPassword = ref('')
@@ -25,8 +26,6 @@ function toSessionUser(u) {
     id: u.id,
     email: u.email,
     displayName: u.displayName,
-    premium: !!u.premium,
-    premiumOperators: u.premiumOperators || null,
   }
 }
 
@@ -36,13 +35,17 @@ export function useAuth() {
 
   const isLoggedIn = computed(() => currentUser.value !== null)
 
-  const userTier = computed(() => (currentUser.value && currentUser.value.premium) ? 'premium' : 'guest')
+  const userTier = computed(() => {
+    if (!currentUser.value) return 'guest'
+    if (userOperators.value.length > 1 || (userOperators.value.length === 1 && userOperators.value[0] !== 'add')) {
+      return 'premium'
+    }
+    return 'guest'
+  })
 
   const unlockedOperators = computed(() => {
-    const u = currentUser.value
-    if (!u || !u.premium) return ['add']
-    const list = (u.premiumOperators || '').split(',').map(s => s.trim()).filter(Boolean)
-    return list.length ? list : OPERATOR_IDS
+    if (!currentUser.value) return ['add']
+    return userOperators.value.length ? [...userOperators.value] : ['add']
   })
 
   function isOperatorUnlocked(op) {
@@ -51,20 +54,28 @@ export function useAuth() {
 
   function isLevelAccessible(op, levelId) {
     if (!isOperatorUnlocked(op)) return false
-    if (!currentUser.value || !currentUser.value.premium) return levelId <= 2
+    if (userTier.value === 'guest') return levelId <= 2
     return true
   }
 
   const subscriptionBadge = computed(() => {
-    const u = currentUser.value
-    if (!u) return '🟡 Guest — ➕ Penjumlahan (Satuan & Puluhan)'
-    if (!u.premium) return '🟡 Guest — ➕ Penjumlahan (Satuan & Puluhan)'
+    if (!currentUser.value) return '🟡 Guest — ➕ Penjumlahan (Satuan & Puluhan)'
+    if (userTier.value === 'guest') return '🟡 Guest — ➕ Penjumlahan (Satuan & Puluhan)'
     const ops = unlockedOperators.value
     const labels = ops.length >= OPERATOR_IDS.length
       ? 'Semua Jenis Latihan'
       : ops.map(o => OPERATOR_LABELS[o] || o).join(', ')
     return '👑 Premium — ' + labels
   })
+
+  async function fetchUserOperators(userId) {
+    try {
+      const ops = await api.getUserOperators(userId)
+      userOperators.value = ops
+    } catch {
+      userOperators.value = ['add']
+    }
+  }
 
   function loadSavedUser() {
     try {
@@ -73,6 +84,7 @@ export function useAuth() {
         const u = JSON.parse(raw)
         currentUser.value = u
         fetchStarsFromApi(u.id)
+        fetchUserOperators(u.id)
         validateSavedUser(u)
         return true
       }
@@ -86,9 +98,11 @@ export function useAuth() {
       currentUser.value = toSessionUser(fresh)
       localStorage.setItem('jarimatika_user', JSON.stringify(currentUser.value))
       fetchStarsFromApi(fresh.id)
+      await fetchUserOperators(fresh.id)
     } catch (err) {
       if (err.status === 404) {
         currentUser.value = null
+        userOperators.value = []
         localStorage.removeItem('jarimatika_user')
         showScreen('screen-menu')
       }
@@ -114,6 +128,7 @@ export function useAuth() {
       currentUser.value = toSessionUser(user)
       localStorage.setItem('jarimatika_user', JSON.stringify(currentUser.value))
       await fetchStarsFromApi(user.id)
+      await fetchUserOperators(user.id)
       showScreen('screen-mode')
     } catch (err) {
       if (err.status === 409) {
@@ -143,6 +158,7 @@ export function useAuth() {
       currentUser.value = toSessionUser(user)
       localStorage.setItem('jarimatika_user', JSON.stringify(currentUser.value))
       await fetchStarsFromApi(user.id)
+      await fetchUserOperators(user.id)
       showScreen('screen-mode')
     } catch (err) {
       if (err.status === 401) {
@@ -160,6 +176,7 @@ export function useAuth() {
 
   function logout() {
     currentUser.value = null
+    userOperators.value = []
     localStorage.removeItem('jarimatika_user')
     showScreen('screen-menu')
   }

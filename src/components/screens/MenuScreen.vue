@@ -6,7 +6,7 @@ import { useAuth } from '../../composables/useAuth.js'
 
 const { mascotSpeech, mascotMouthClass, onMascotClick } = useMascot()
 const { showScreen } = useNavigation()
-const { currentUser, isLoggedIn, subscriptionBadge, logout, goToPlay } = useAuth()
+const { currentUser, isLoggedIn, userTier, subscriptionBadge, logout, goToPlay } = useAuth()
 </script>
 
 <template>
@@ -41,8 +41,8 @@ const { currentUser, isLoggedIn, subscriptionBadge, logout, goToPlay } = useAuth
         </div>
         <!-- Subscription badge -->
         <div style="background:#FFF8E6;border:2px solid #FFD700;border-radius:16px;padding:10px 16px;display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-          <span style="font-size:1.3rem;">{{ currentUser.premium ? '👑' : '🟡' }}</span>
-          <span style="font-weight:800;color:var(--text);font-size:0.9rem;flex:1;">{{ currentUser.premium ? 'Premium' : 'Guest' }}</span>
+          <span style="font-size:1.3rem;">{{ userTier === 'premium' ? '👑' : '🟡' }}</span>
+          <span style="font-weight:800;color:var(--text);font-size:0.9rem;flex:1;">{{ userTier === 'premium' ? 'Premium' : 'Guest' }}</span>
           <span style="font-size:0.75rem;color:#888;font-weight:600;">{{ subscriptionBadge.split('—')[1]?.trim() || 'Semua Jenis' }}</span>
         </div>
         <button class="btn btn-accent" @click="logout()" style="font-size:0.8rem;">⬅ Logout</button>
