@@ -1,7 +1,11 @@
 import { ref } from 'vue'
 import * as api from '../utils/api.js'
 
-const stars = ref({ 1: 0, 2: 0, 3: 0, 4: 0 })
+const stars = ref({})
+
+function starKey(levelId, operator) {
+  return `${levelId}-${operator}`
+}
 
 export function useStars() {
   function loadLocalStars() {
@@ -20,11 +24,13 @@ export function useStars() {
   async function fetchStarsFromApi(userId) {
     try {
       const results = await api.getUserResults(userId)
-      const best = { 1: 0, 2: 0, 3: 0, 4: 0 }
+      const best = {}
       for (const r of results) {
-        const lid = r.level.id || r.levelId
+        const lid = r.level?.id || r.levelId
+        const op = r.operator || 'add'
         const s = r.starsEarned
-        if (s > (best[lid] || 0)) best[lid] = s
+        const key = starKey(lid, op)
+        if (s > (best[key] || 0)) best[key] = s
       }
       stars.value = best
       saveLocalStars(best)
@@ -33,10 +39,28 @@ export function useStars() {
     }
   }
 
-  function isLevelUnlocked(levelId) {
-    if (levelId === 1) return true
-    return (stars.value[levelId - 1] || 0) >= 3
+  function getStars(levelId, operator) {
+    return stars.value[starKey(levelId, operator)] || 0
   }
 
-  return { stars, loadLocalStars, saveLocalStars, fetchStarsFromApi, isLevelUnlocked }
+  function setStars(levelId, operator, count) {
+    const key = starKey(levelId, operator)
+    const prev = stars.value[key] || 0
+    if (count > prev) {
+      stars.value[key] = count
+      saveLocalStars(stars.value)
+    }
+  }
+
+  function isLevelUnlocked(levelId) {
+    if (levelId === 1) return true
+    // Check if previous level has 3 stars for any operator
+    const prevLevel = levelId - 1
+    for (const key of Object.keys(stars.value)) {
+      if (key.startsWith(prevLevel + '-') && stars.value[key] >= 3) return true
+    }
+    return false
+  }
+
+  return { stars, loadLocalStars, saveLocalStars, fetchStarsFromApi, getStars, setStars, isLevelUnlocked }
 }

@@ -5,7 +5,7 @@ import { useMascot } from '../../composables/useMascot.js'
 import { useQuiz } from '../../composables/useQuiz.js'
 
 const { mascotSpeech, mascotMouthClass, onMascotClick } = useMascot()
-const OPERATOR_SYMBOLS = { add: '+', subtract: '-', multiply: '×', divide: '÷', campuran: '?' }
+const OPERATOR_SYMBOLS = { add: '+', subtract: '-', multiply: '×', divide: '÷', hybrid: '?' }
 
 const {
   quizCardWiggle,
@@ -47,7 +47,7 @@ const {
       </div>
       <div class="hand-display" v-html="handDisplayHtml"></div>
       <p style="font-size:1.3rem;font-weight:700;color:var(--text);margin:4px 0;">
-        Berapa hasil {{ currentQuestion?.op === 'add' ? 'penjumlahan' : currentQuestion?.op === 'subtract' ? 'pengurangan' : currentQuestion?.op === 'multiply' ? 'perkalian' : currentQuestion?.op === 'divide' ? 'pembagian' : 'perhitungan' }}nya? 🤔
+        Berapa hasil perhitungannya? 🤔
       </p>
       <div class="options-grid">
         <button v-for="(opt, idx) in currentQuestion ? currentQuestion.options : []" :key="idx"
