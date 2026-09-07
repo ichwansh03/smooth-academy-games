@@ -20,16 +20,15 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(name = "display_name")
     private String displayName;
 
-    @Column(name = "password_hash", nullable = false)
+    @Column(nullable = false)
     private String passwordHash;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(nullable = false)
     private Instant createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(nullable = false)
     private Instant updatedAt;
 
     @PrePersist

@@ -31,22 +31,21 @@ public class QuizResult {
     @Column(nullable = false)
     private String mode;
 
-    @Column(nullable = true)
     private String operator;
 
-    @Column(name = "total_questions", nullable = false)
+    @Column(nullable = false)
     private int totalQuestions;
 
-    @Column(name = "correct_count", nullable = false)
+    @Column(nullable = false)
     private int correctCount;
 
     @Column(nullable = false, precision = 5, scale = 2)
     private BigDecimal percentage;
 
-    @Column(name = "stars_earned", nullable = false)
+    @Column(nullable = false)
     private int starsEarned;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(nullable = false)
     private Instant createdAt;
 
     @PrePersist

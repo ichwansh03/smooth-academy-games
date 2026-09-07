@@ -24,7 +24,7 @@ const quizCardWiggle = ref(false)
 const starsEarned = ref(0)
 
 export function useQuiz() {
-  const { currentUser, isLoggedIn } = useAuth()
+  const { currentUser, isLoggedIn, isLevelAccessible } = useAuth()
   const { setStars, fetchStarsFromApi } = useStars()
   const { mascotSpeech, mascotMouthClass } = useMascot()
   const { showScreen } = useNavigation()
@@ -105,7 +105,12 @@ export function useQuiz() {
     return 'Jangan menyerah! Latihan lagi ya, pasti bisa! 💪'
   })
 
-  const canGoNextLevel = computed(() => starsEarned.value >= 3 && currentLevelId.value < 4)
+  const canGoNextLevel = computed(() => {
+    if (starsEarned.value < 3) return false
+    if (currentLevelId.value >= 4) return false
+    const nextLevel = currentLevelId.value + 1
+    return isLevelAccessible(currentOperator.value, nextLevel)
+  })
 
   const modeBadgeText = computed(() => {
     return currentMode.value === 'practice' ? '🧘 Mode Latihan' : '⚡ Mode Tantangan (30dtk)'
