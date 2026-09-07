@@ -28,11 +28,9 @@ public class UserOperator {
     @JoinColumn(name = "max_level_id")
     private Level maxLevel;
 
-    @Column(name = "expires_at")
     private Instant expiresAt;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     @Builder.Default
     private SourceType source = SourceType.GUEST_DEFAULT;
 

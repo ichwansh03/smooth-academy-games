@@ -20,24 +20,23 @@ public class QuizAnswer {
     @JoinColumn(name = "quiz_result_id", nullable = false)
     private QuizResult quizResult;
 
-    @Column(name = "question_index", nullable = false)
+    @Column(nullable = false)
     private int questionIndex;
 
-    @Column(name = "num_a", nullable = false)
+    @Column(nullable = false)
     private int numA;
 
-    @Column(name = "num_b", nullable = false)
+    @Column(nullable = false)
     private int numB;
 
-    @Column(name = "correct_answer", nullable = false)
+    @Column(nullable = false)
     private int correctAnswer;
 
-    @Column(name = "user_answer", nullable = false)
+    @Column(nullable = false)
     private int userAnswer;
 
-    @Column(name = "is_correct", nullable = false)
+    @Column(nullable = false)
     private boolean isCorrect;
 
-    @Column(name = "response_time_ms")
     private Integer responseTimeMs;
 }

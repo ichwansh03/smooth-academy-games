@@ -17,10 +17,6 @@ public class UserOperatorRepository implements PanacheRepositoryBase<UserOperato
         return list("user.id = ?1", userId);
     }
 
-    public boolean hasOperator(UUID userId, OperatorType operator) {
-        return count("user.id = ?1 AND operator = ?2", userId, operator) > 0;
-    }
-
     public List<UserOperator> findActiveByUserAndOperator(UUID userId, OperatorType operator) {
         return list("user.id = ?1 AND operator = ?2 AND (expiresAt IS NULL OR expiresAt > ?3)",
                 userId, operator, Instant.now());

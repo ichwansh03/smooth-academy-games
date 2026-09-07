@@ -10,10 +10,7 @@ import org.ichwan.repository.LevelRepository;
 import org.ichwan.repository.QuizResultRepository;
 import org.ichwan.repository.UserOperatorRepository;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @ApplicationScoped
 public class AccessService {
@@ -43,17 +40,13 @@ public class AccessService {
         // If any active row has maxLevel=null → unlimited
         boolean hasUnlimited = active.stream().anyMatch(uo -> uo.getMaxLevel() == null);
         if (hasUnlimited) {
-            return Optional.of(
-                    levelRepository.findAll().stream()
-                            .max(Comparator.comparingInt(Level::getSortOrder))
-                            .orElse(null)
-            );
+            return levelRepository.findAll().stream().max(Comparator.comparingInt(Level::getSortOrder));
         }
 
         // Take the highest sortOrder among active rows' maxLevel
         return active.stream()
                 .map(UserOperator::getMaxLevel)
-                .filter(l -> l != null)
+                .filter(Objects::nonNull)
                 .max(Comparator.comparingInt(Level::getSortOrder));
     }
 

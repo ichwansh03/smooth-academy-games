@@ -28,14 +28,6 @@ public class UserService {
     @Inject
     LevelRepository levelRepository;
 
-    private String hashPassword(String password) {
-        return password;
-    }
-
-    private Level getLevelBySortOrder(int sortOrder) {
-        return levelRepository.find("sortOrder", sortOrder).firstResult();
-    }
-
     @Transactional
     public User register(String email, String password, String displayName) {
         if (email == null || password == null) {
@@ -48,12 +40,12 @@ public class UserService {
         User user = User.builder()
                 .email(email)
                 .displayName(displayName)
-                .passwordHash(hashPassword(password))
+                .passwordHash(password)
                 .build();
         userRepository.persist(user);
 
         // Guest baseline: ADD + SUBTRACT, capped at Satuan (sortOrder=1)
-        Level satuan = getLevelBySortOrder(1);
+        Level satuan = levelRepository.find("sortOrder", 1).firstResult();
         grantEntitlement(user, OperatorType.ADD, satuan, null, SourceType.GUEST_DEFAULT);
         grantEntitlement(user, OperatorType.SUBTRACT, satuan, null, SourceType.GUEST_DEFAULT);
 
@@ -126,7 +118,7 @@ public class UserService {
     @Transactional
     public void setOperators(User user, List<OperatorType> operators) {
         userOperatorRepository.delete("user.id", user.getId());
-        Level satuan = getLevelBySortOrder(1);
+        Level satuan = levelRepository.find("sortOrder", 1).firstResult();
         for (OperatorType op : operators) {
             grantEntitlement(user, op, satuan, null, SourceType.GUEST_DEFAULT);
         }

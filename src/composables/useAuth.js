@@ -38,10 +38,8 @@ export function useAuth() {
 
   const userTier = computed(() => {
     if (!currentUser.value) return 'guest'
-    if (userOperators.value.length > 1 || (userOperators.value.length === 1 && userOperators.value[0] !== 'add')) {
-      return 'premium'
-    }
-    return 'guest'
+    const hasSubscription = userEntitlements.value.some(e => e.source === 'SUBSCRIPTION' && e.active)
+    return hasSubscription ? 'premium' : 'guest'
   })
 
   const unlockedOperators = computed(() => {
