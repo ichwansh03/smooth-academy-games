@@ -3,6 +3,8 @@ package org.ichwan.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.Instant;
+
 @Entity
 @Table(name = "user_operators", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "operator"}))
 @Getter @Setter
@@ -21,4 +23,20 @@ public class UserOperator {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OperatorType operator;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "max_level_id")
+    private Level maxLevel;
+
+    @Column(name = "expires_at")
+    private Instant expiresAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private SourceType source = SourceType.GUEST_DEFAULT;
+
+    public boolean isActive() {
+        return expiresAt == null || expiresAt.isAfter(Instant.now());
+    }
 }

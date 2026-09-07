@@ -82,3 +82,18 @@ export function revokeOperator(userId, operator) {
     body: JSON.stringify({ operator }),
   })
 }
+
+export function getUserEntitlements(userId) {
+  return request(`/users/${userId}/entitlements`)
+}
+
+export function subscribeOperator(userId, operator, days) {
+  return request(`/users/${userId}/subscribe`, {
+    method: 'POST',
+    body: JSON.stringify({ operator, days }),
+  })
+}
+
+export function checkAccess(userId, operator, levelId) {
+  return request(`/users/${userId}/access/${operator}/${levelId}`)
+}

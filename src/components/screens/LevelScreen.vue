@@ -15,14 +15,6 @@ const OPERATOR_LABELS = {
   hybrid: '🔀 Campuran',
 }
 
-const ALLOWED_LEVELS = {
-  add: [1, 2, 3, 4],
-  subtract: [1, 2, 3, 4],
-  multiply: [1, 2, 3, 4],
-  divide: [1, 2, 3, 4],
-  hybrid: [1, 2, 3, 4],
-}
-
 const { mascotSpeech, mascotMouthClass, onMascotClick } = useMascot()
 const { showScreen } = useNavigation()
 const { getStars, isLevelUnlocked } = useStars()
@@ -30,8 +22,10 @@ const { currentOperator, modeBadgeText, startQuiz } = useQuiz()
 const { isLevelAccessible } = useAuth()
 
 function levelLocked(lvl) {
-  const allowed = ALLOWED_LEVELS[currentOperator.value] || [1, 2, 3, 4]
-  return !allowed.includes(lvl.id) || !isLevelAccessible(currentOperator.value, lvl.id) || !isLevelUnlocked(lvl.id)
+  const op = currentOperator.value
+  if (!isLevelAccessible(op, lvl.id)) return true
+  if (!isLevelUnlocked(lvl.id, op)) return true
+  return false
 }
 
 function getLevelStars(lvl) {

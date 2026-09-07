@@ -52,14 +52,11 @@ export function useStars() {
     }
   }
 
-  function isLevelUnlocked(levelId) {
+  function isLevelUnlocked(levelId, operator) {
     if (levelId === 1) return true
-    // Check if previous level has 3 stars for any operator
     const prevLevel = levelId - 1
-    for (const key of Object.keys(stars.value)) {
-      if (key.startsWith(prevLevel + '-') && stars.value[key] >= 3) return true
-    }
-    return false
+    const prevStars = getStars(prevLevel, operator)
+    return prevStars >= 3
   }
 
   return { stars, loadLocalStars, saveLocalStars, fetchStarsFromApi, getStars, setStars, isLevelUnlocked }
