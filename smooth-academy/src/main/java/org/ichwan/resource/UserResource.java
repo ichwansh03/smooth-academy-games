@@ -5,11 +5,15 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.ichwan.entity.Level;
 import org.ichwan.entity.OperatorType;
 import org.ichwan.entity.User;
+import org.ichwan.entity.UserOperator;
+import org.ichwan.service.AccessService;
 import org.ichwan.service.UserService;
 
 import java.net.URI;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -22,6 +26,9 @@ public class UserResource {
 
     @Inject
     UserService userService;
+
+    @Inject
+    AccessService accessService;
 
     @POST
     @Path("/register")
@@ -99,7 +106,7 @@ public class UserResource {
         User user = userService.findById(id);
         try {
             OperatorType op = OperatorType.valueOf(body.get("operator").toUpperCase());
-            userService.grantOperator(user, op);
+            userService.grantEntitlement(user, op, null, null, org.ichwan.entity.SourceType.SUBSCRIPTION);
             return Response.ok(Map.of("operators", userService.getOperators(id))).build();
         } catch (IllegalArgumentException e) {
             throw new WebApplicationException("Invalid operator", Response.Status.BAD_REQUEST);
@@ -117,5 +124,51 @@ public class UserResource {
         } catch (IllegalArgumentException e) {
             throw new WebApplicationException("Invalid operator", Response.Status.BAD_REQUEST);
         }
+    }
+
+    @POST
+    @Path("/{id}/subscribe")
+    public Response subscribeOperator(@PathParam("id") UUID id, Map<String, Object> body) {
+        User user = userService.findById(id);
+        try {
+            OperatorType op = OperatorType.valueOf(((String) body.get("operator")).toUpperCase());
+            int days = body.get("days") != null ? ((Number) body.get("days")).intValue() : 30;
+            userService.subscribeOperator(user, op, Duration.ofDays(days));
+            return Response.ok(Map.of("operators", userService.getOperators(id))).build();
+        } catch (IllegalArgumentException e) {
+            throw new WebApplicationException("Invalid operator", Response.Status.BAD_REQUEST);
+        }
+    }
+
+    @GET
+    @Path("/{id}/access/{operator}/{levelId}")
+    public Response checkAccess(@PathParam("id") UUID id,
+                                @PathParam("operator") String operatorStr,
+                                @PathParam("levelId") int levelId) {
+        userService.findById(id);
+        try {
+            OperatorType op = OperatorType.valueOf(operatorStr.toUpperCase());
+            boolean canPlay = accessService.canPlayLevel(id, op, levelId);
+            return Response.ok(Map.of("canPlay", canPlay)).build();
+        } catch (IllegalArgumentException e) {
+            throw new WebApplicationException("Invalid operator", Response.Status.BAD_REQUEST);
+        }
+    }
+
+    @GET
+    @Path("/{id}/entitlements")
+    public List<Map<String, Object>> getEntitlements(@PathParam("id") UUID id) {
+        userService.findById(id);
+        return accessService.getAllActiveEntitlements(id).stream()
+                .map(uo -> {
+                    Map<String, Object> m = new java.util.HashMap<>();
+                    m.put("operator", uo.getOperator().name().toLowerCase());
+                    m.put("maxLevel", uo.getMaxLevel() != null ? uo.getMaxLevel().getSortOrder() : null);
+                    m.put("expiresAt", uo.getExpiresAt() != null ? uo.getExpiresAt().toString() : null);
+                    m.put("source", uo.getSource().name());
+                    m.put("active", uo.isActive());
+                    return m;
+                })
+                .toList();
     }
 }

@@ -5,6 +5,7 @@ import { useStars } from './useStars.js'
 
 const currentUser = ref(null)
 const userOperators = ref([])
+const userEntitlements = ref([])
 const loginTab = ref('login')
 const loginEmail = ref('')
 const loginPassword = ref('')
@@ -44,23 +45,34 @@ export function useAuth() {
   })
 
   const unlockedOperators = computed(() => {
-    if (!currentUser.value) return ['add']
-    return userOperators.value.length ? [...userOperators.value] : ['add']
+    if (!currentUser.value) return []
+    return userOperators.value.length ? [...userOperators.value] : []
   })
 
   function isOperatorUnlocked(op) {
     return unlockedOperators.value.includes(op)
   }
 
+  function getMaxLevelForOperator(op) {
+    const ent = userEntitlements.value.find(e => e.operator === op && e.active)
+    if (!ent) return 0
+    if (ent.maxLevel === null) return 4
+    return ent.maxLevel
+  }
+
   function isLevelAccessible(op, levelId) {
     if (!isOperatorUnlocked(op)) return false
-    if (userTier.value === 'guest') return levelId <= 2
-    return true
+    const maxLevel = getMaxLevelForOperator(op)
+    return levelId <= maxLevel
   }
 
   const subscriptionBadge = computed(() => {
-    if (!currentUser.value) return '🟡 Guest — ➕ Penjumlahan (Satuan & Puluhan)'
-    if (userTier.value === 'guest') return '🟡 Guest — ➕ Penjumlahan (Satuan & Puluhan)'
+    if (!currentUser.value) return '🟡 Guest — ➕➖ Penjumlahan & Pengurangan (Satuan)'
+    if (userTier.value === 'guest') {
+      const ops = unlockedOperators.value
+      const labels = ops.map(o => OPERATOR_LABELS[o] || o).join(', ')
+      return '🟡 Guest — ' + labels + ' (Satuan)'
+    }
     const ops = unlockedOperators.value
     const labels = ops.length >= OPERATOR_IDS.length
       ? 'Semua Jenis Latihan'
@@ -73,7 +85,16 @@ export function useAuth() {
       const ops = await api.getUserOperators(userId)
       userOperators.value = ops
     } catch {
-      userOperators.value = ['add']
+      userOperators.value = []
+    }
+  }
+
+  async function fetchUserEntitlements(userId) {
+    try {
+      const ents = await api.getUserEntitlements(userId)
+      userEntitlements.value = ents
+    } catch {
+      userEntitlements.value = []
     }
   }
 
@@ -85,6 +106,7 @@ export function useAuth() {
         currentUser.value = u
         fetchStarsFromApi(u.id)
         fetchUserOperators(u.id)
+        fetchUserEntitlements(u.id)
         validateSavedUser(u)
         return true
       }
@@ -99,10 +121,12 @@ export function useAuth() {
       localStorage.setItem('jarimatika_user', JSON.stringify(currentUser.value))
       fetchStarsFromApi(fresh.id)
       await fetchUserOperators(fresh.id)
+      await fetchUserEntitlements(fresh.id)
     } catch (err) {
       if (err.status === 404) {
         currentUser.value = null
         userOperators.value = []
+        userEntitlements.value = []
         localStorage.removeItem('jarimatika_user')
         showScreen('screen-menu')
       }
@@ -129,6 +153,7 @@ export function useAuth() {
       localStorage.setItem('jarimatika_user', JSON.stringify(currentUser.value))
       await fetchStarsFromApi(user.id)
       await fetchUserOperators(user.id)
+      await fetchUserEntitlements(user.id)
       showScreen('screen-mode')
     } catch (err) {
       if (err.status === 409) {
@@ -159,6 +184,7 @@ export function useAuth() {
       localStorage.setItem('jarimatika_user', JSON.stringify(currentUser.value))
       await fetchStarsFromApi(user.id)
       await fetchUserOperators(user.id)
+      await fetchUserEntitlements(user.id)
       showScreen('screen-mode')
     } catch (err) {
       if (err.status === 401) {
@@ -177,6 +203,7 @@ export function useAuth() {
   function logout() {
     currentUser.value = null
     userOperators.value = []
+    userEntitlements.value = []
     localStorage.removeItem('jarimatika_user')
     showScreen('screen-menu')
   }

@@ -53,7 +53,7 @@ const { currentUser, isLoggedIn, userTier, subscriptionBadge, logout, goToPlay }
         <span style="font-size:1.3rem;">🟡</span>
         <div style="flex:1;">
           <div style="font-weight:800;color:var(--text);font-size:0.9rem;">Guest</div>
-          <div style="font-size:0.75rem;color:#888;">Daftar untuk bermain Penjumlahan (Satuan & Puluhan)</div>
+          <div style="font-size:0.75rem;color:#888;">Daftar untuk bermain Penjumlahan & Pengurangan (Satuan)</div>
         </div>
       </div>
     </div>

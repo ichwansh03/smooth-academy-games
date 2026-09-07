@@ -5,12 +5,13 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
-import org.ichwan.entity.OperatorType;
-import org.ichwan.entity.User;
-import org.ichwan.entity.UserOperator;
+import org.ichwan.entity.*;
+import org.ichwan.repository.LevelRepository;
 import org.ichwan.repository.UserOperatorRepository;
 import org.ichwan.repository.UserRepository;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -24,8 +25,15 @@ public class UserService {
     @Inject
     UserOperatorRepository userOperatorRepository;
 
+    @Inject
+    LevelRepository levelRepository;
+
     private String hashPassword(String password) {
         return password;
+    }
+
+    private Level getLevelBySortOrder(int sortOrder) {
+        return levelRepository.find("sortOrder", sortOrder).firstResult();
     }
 
     @Transactional
@@ -44,7 +52,11 @@ public class UserService {
                 .build();
         userRepository.persist(user);
 
-        grantOperator(user, OperatorType.ADD);
+        // Guest baseline: ADD + SUBTRACT, capped at Satuan (sortOrder=1)
+        Level satuan = getLevelBySortOrder(1);
+        grantEntitlement(user, OperatorType.ADD, satuan, null, SourceType.GUEST_DEFAULT);
+        grantEntitlement(user, OperatorType.SUBTRACT, satuan, null, SourceType.GUEST_DEFAULT);
+
         return user;
     }
 
@@ -74,19 +86,36 @@ public class UserService {
 
     public List<String> getOperators(UUID userId) {
         return userOperatorRepository.findByUserId(userId).stream()
+                .filter(UserOperator::isActive)
                 .map(uo -> uo.getOperator().name().toLowerCase())
+                .distinct()
                 .collect(Collectors.toList());
     }
 
     @Transactional
-    public void grantOperator(User user, OperatorType operator) {
-        if (!userOperatorRepository.hasOperator(user.getId(), operator)) {
-            UserOperator uo = UserOperator.builder()
-                    .user(user)
-                    .operator(operator)
-                    .build();
-            userOperatorRepository.persist(uo);
-        }
+    public void grantEntitlement(User user, OperatorType operator, Level maxLevel, Instant expiresAt, SourceType source) {
+        userOperatorRepository.findExact(user.getId(), operator).ifPresentOrElse(
+                existing -> {
+                    existing.setMaxLevel(maxLevel);
+                    existing.setExpiresAt(expiresAt);
+                    existing.setSource(source);
+                },
+                () -> {
+                    UserOperator uo = UserOperator.builder()
+                            .user(user)
+                            .operator(operator)
+                            .maxLevel(maxLevel)
+                            .expiresAt(expiresAt)
+                            .source(source)
+                            .build();
+                    userOperatorRepository.persist(uo);
+                }
+        );
+    }
+
+    @Transactional
+    public void subscribeOperator(User user, OperatorType operator, Duration duration) {
+        grantEntitlement(user, operator, null, Instant.now().plus(duration), SourceType.SUBSCRIPTION);
     }
 
     @Transactional
@@ -97,9 +126,9 @@ public class UserService {
     @Transactional
     public void setOperators(User user, List<OperatorType> operators) {
         userOperatorRepository.delete("user.id", user.getId());
+        Level satuan = getLevelBySortOrder(1);
         for (OperatorType op : operators) {
-            grantOperator(user, op);
+            grantEntitlement(user, op, satuan, null, SourceType.GUEST_DEFAULT);
         }
     }
 }
-
