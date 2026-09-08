@@ -4,6 +4,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 import org.ichwan.entity.*;
 import org.ichwan.repository.QuizResultRepository;
 
@@ -23,11 +24,26 @@ public class QuizService {
     @Inject
     LevelService levelService;
 
+    @Inject
+    AccessService accessService;
+
     @Transactional
     public QuizResult submitResult(UUID userId, Integer levelId, String mode, String operator,
                                    Integer totalQuestions, Integer correctCount) {
         User user = userService.findById(userId);
         Level level = levelService.findById(levelId);
+
+        OperatorType opType;
+        try {
+            opType = OperatorType.valueOf((operator != null ? operator : "add").toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new WebApplicationException("Invalid operator: " + operator, Response.Status.BAD_REQUEST);
+        }
+
+        if (!accessService.canPlayLevel(userId, opType, levelId)) {
+            throw new WebApplicationException("Level ini masih terkunci. Selesaikan level sebelumnya dulu! 🔒",
+                    Response.Status.FORBIDDEN);
+        }
 
         BigDecimal percentage = BigDecimal.valueOf(correctCount.doubleValue() / totalQuestions * 100)
                 .setScale(2, java.math.RoundingMode.HALF_UP);
