@@ -40,6 +40,9 @@ public class QuizResource {
             return Response.created(URI.create("/api/quiz-results/" + result.getId()))
                     .entity(result)
                     .build();
+        } catch (WebApplicationException e) {
+            LOG.warnf("POST /quiz-results rejected: %s", e.getResponse().getStatus());
+            throw e;
         } catch (Exception e) {
             LOG.errorf("POST /quiz-results FAILED body=%s error=%s", body, e.getMessage());
             throw e;

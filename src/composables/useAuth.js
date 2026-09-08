@@ -44,7 +44,8 @@ export function useAuth() {
 
   const unlockedOperators = computed(() => {
     if (!currentUser.value) return []
-    return userOperators.value.length ? [...userOperators.value] : []
+    if (userOperators.value.length) return [...userOperators.value]
+    return ['add', 'subtract']
   })
 
   function isOperatorUnlocked(op) {
@@ -52,8 +53,9 @@ export function useAuth() {
   }
 
   function getMaxLevelForOperator(op) {
+    if (!isOperatorUnlocked(op)) return 0
     const ent = userEntitlements.value.find(e => e.operator === op && e.active)
-    if (!ent) return 0
+    if (!ent) return 1
     if (ent.maxLevel === null) return 4
     return ent.maxLevel
   }

@@ -139,7 +139,39 @@ export function useQuiz() {
     showScreen('screen-level')
   }
 
-  function startQuiz(levelId) {
+  async function startQuiz(levelId) {
+    if (isLoggedIn.value) {
+      try {
+        const res = await api.checkAccess(currentUser.value.id, currentOperator.value, levelId)
+        if (!res.canPlay) {
+          mascotSpeech.value = 'Level ini masih terkunci, ayo naikkan levelmu dulu! 🔒'
+          mascotMouthClass.value = ''
+          showScreen('screen-level')
+          return
+        }
+      } catch (err) {
+        if (err.status === 403) {
+          mascotSpeech.value = 'Level ini masih terkunci, ayo naikkan levelmu dulu! 🔒'
+          mascotMouthClass.value = ''
+          showScreen('screen-level')
+          return
+        }
+        if (!isLevelAccessible(currentOperator.value, levelId)) {
+          mascotSpeech.value = 'Level ini masih terkunci, ayo naikkan levelmu dulu! 🔒'
+          mascotMouthClass.value = ''
+          showScreen('screen-level')
+          return
+        }
+      }
+    } else {
+      if (!isLevelAccessible(currentOperator.value, levelId)) {
+        mascotSpeech.value = 'Level ini masih terkunci, ayo naikkan levelmu dulu! 🔒'
+        mascotMouthClass.value = ''
+        showScreen('screen-level')
+        return
+      }
+    }
+
     currentLevelId.value = levelId
     currentQuestionIndex.value = 0
     correctCount.value = 0
@@ -313,10 +345,10 @@ export function useQuiz() {
   }
 
   function goToNextLevel() {
-    if (currentLevelId.value < 4) {
-      currentLevelId.value++
-      startQuiz(currentLevelId.value)
-    }
+    const next = currentLevelId.value + 1
+    if (next > 4) return
+    if (!isLevelAccessible(currentOperator.value, next)) return
+    startQuiz(next)
   }
 
   return {
