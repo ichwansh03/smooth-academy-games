@@ -42,11 +42,13 @@ export function useAuth() {
     return hasSubscription ? 'premium' : 'guest'
   })
 
-  const unlockedOperators = computed(() => {
-    if (!currentUser.value) return []
-    if (userOperators.value.length) return [...userOperators.value]
-    return ['add', 'subtract']
-  })
+const unlockedOperators = computed(() => {
+  // If this returns [], Level 1 will never open for guests.
+  if (!currentUser.value) return ['add', 'subtract'] 
+  
+  if (userOperators.value.length) return [...userOperators.value]
+  return ['add', 'subtract']
+})
 
   function isOperatorUnlocked(op) {
     return unlockedOperators.value.includes(op)

@@ -19,13 +19,40 @@ const { mascotSpeech, mascotMouthClass, onMascotClick } = useMascot()
 const { showScreen } = useNavigation()
 const { getStars, isLevelUnlocked } = useStars()
 const { currentOperator, modeBadgeText, startQuiz } = useQuiz()
-const { isLevelAccessible } = useAuth()
+const { isLevelAccessible, isLoggedIn } = useAuth()
 
 function levelLocked(lvl) {
   const op = currentOperator.value
-  if (!isLevelAccessible(op, lvl.id)) return true
-  if (!isLevelUnlocked(lvl.id, op)) return true
+  const accessible = isLevelAccessible(op, lvl.id)
+  const unlocked = isLevelUnlocked(lvl.id, op)
+
+  // This will print the background math to your console
+  console.log(`Level ${lvl.id} | Accessible: ${accessible} | Unlocked: ${unlocked}`)
+
+  // Force Level 1 (Satuan) to always visually unlock
+  if (lvl.id == 1) return false 
+  
+  if (!accessible) return true
+  if (!unlocked) return true
   return false
+}
+
+function forceStartQuiz(lvl) {
+  // 1. Absolute blocker: Guests cannot click Level 2 or higher
+  if (lvl.id > 1 && !isLoggedIn.value) {
+    mascotSpeech.value = 'Daftar akun atau login dulu untuk membuka level Puluhan! 🔒'
+    mascotMouthClass.value = ''
+    return 
+  }
+
+  // 2. Standard blocker: Logged-in users who haven't passed the previous level
+  if (levelLocked(lvl) && lvl.id != 1) {
+    mascotSpeech.value = 'Dapatkan 3 bintang di level sebelumnya dulu ya! ⭐'
+    mascotMouthClass.value = ''
+    return
+  }
+
+  startQuiz(lvl.id)
 }
 
 function getLevelStars(lvl) {
@@ -51,21 +78,22 @@ function getLevelStars(lvl) {
         </span>
       </div>
       <div class="level-grid">
-        <div v-for="lvl in LEVELS" :key="lvl.id"
-          :class="['level-card', { locked: levelLocked(lvl) }]"
-          @click="!levelLocked(lvl) && startQuiz(lvl.id)">
-          <div class="level-icon">{{ lvl.icon }}</div>
-          <div class="level-title">{{ lvl.name }}</div>
-          <div class="level-range">🔢 {{ lvl.label }}</div>
-          <div class="level-stars">
-            <span v-for="s in 3" :key="s"
-              :class="['star', { earned: s <= getLevelStars(lvl) }]">
-              {{ s <= getLevelStars(lvl) ? '⭐' : '☆' }}
-            </span>
-          </div>
-          <div v-if="levelLocked(lvl)" class="lock-icon">🔒</div>
-        </div>
-      </div>
+  <div v-for="lvl in LEVELS" :key="lvl.id"
+    :class="['level-card', { locked: levelLocked(lvl) }]"
+    @click="forceStartQuiz(lvl)"> <!-- CHANGED HERE -->
+    
+    <div class="level-icon">{{ lvl.icon }}</div>
+    <div class="level-title">{{ lvl.name }}</div>
+    <div class="level-range">🔢 {{ lvl.label }}</div>
+    <div class="level-stars">
+      <span v-for="s in 3" :key="s"
+        :class="['star', { earned: s <= getLevelStars(lvl) }]">
+        {{ s <= getLevelStars(lvl) ? '⭐' : '☆' }}
+      </span>
+    </div>
+    <div v-if="levelLocked(lvl)" class="lock-icon">🔒</div>
+  </div>
+</div>
       <button class="btn btn-accent" @click="showScreen('screen-type')" style="margin-top:4px;">⬅ Ganti Jenis</button>
     </div>
   </div>

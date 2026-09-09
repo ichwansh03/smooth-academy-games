@@ -105,12 +105,16 @@ export function useQuiz() {
     return 'Jangan menyerah! Latihan lagi ya, pasti bisa! 💪'
   })
 
-  const canGoNextLevel = computed(() => {
-    if (starsEarned.value < 3) return false
-    if (currentLevelId.value >= 4) return false
-    const nextLevel = currentLevelId.value + 1
-    return isLevelAccessible(currentOperator.value, nextLevel)
-  })
+const canGoNextLevel = computed(() => {
+  if (starsEarned.value < 3) return false
+  if (currentLevelId.value >= 4) return false
+  
+  // GUEST BLOCKER: If not logged in, immediately return false
+  if (!isLoggedIn.value) return false 
+
+  const nextLevel = currentLevelId.value + 1
+  return isLevelAccessible(currentOperator.value, nextLevel)
+})
 
   const modeBadgeText = computed(() => {
     return currentMode.value === 'practice' ? '🧘 Mode Latihan' : '⚡ Mode Tantangan (30dtk)'
@@ -139,32 +143,26 @@ export function useQuiz() {
     showScreen('screen-level')
   }
 
-  async function startQuiz(levelId) {
+ async function startQuiz(levelId) {
+  console.log('1. startQuiz triggered for level:', levelId);
+  
+  try {
     if (isLoggedIn.value) {
-      try {
-        const res = await api.checkAccess(currentUser.value.id, currentOperator.value, levelId)
-        if (!res.canPlay) {
-          mascotSpeech.value = 'Level ini masih terkunci, ayo naikkan levelmu dulu! 🔒'
-          mascotMouthClass.value = ''
-          showScreen('screen-level')
-          return
-        }
-      } catch (err) {
-        if (err.status === 403) {
-          mascotSpeech.value = 'Level ini masih terkunci, ayo naikkan levelmu dulu! 🔒'
-          mascotMouthClass.value = ''
-          showScreen('screen-level')
-          return
-        }
-        if (!isLevelAccessible(currentOperator.value, levelId)) {
-          mascotSpeech.value = 'Level ini masih terkunci, ayo naikkan levelmu dulu! 🔒'
-          mascotMouthClass.value = ''
-          showScreen('screen-level')
-          return
-        }
+      console.log('2a. User logged in, checking API...');
+      const res = await api.checkAccess(currentUser.value.id, currentOperator.value, levelId)
+      
+      // FIX: Force allow Level 1 (Satuan) even if the backend rejects it
+      if (!res.canPlay && levelId != 1) { 
+        console.log('3a. API denied access');
+        mascotSpeech.value = 'Level ini masih terkunci, ayo naikkan levelmu dulu! 🔒'
+        mascotMouthClass.value = ''
+        showScreen('screen-level')
+        return
       }
     } else {
+      console.log('2b. Guest user, checking local access...');
       if (!isLevelAccessible(currentOperator.value, levelId)) {
+        console.log('3b. Local access denied');
         mascotSpeech.value = 'Level ini masih terkunci, ayo naikkan levelmu dulu! 🔒'
         mascotMouthClass.value = ''
         showScreen('screen-level')
@@ -172,19 +170,32 @@ export function useQuiz() {
       }
     }
 
+    console.log('4. Access granted, setting up variables...');
     currentLevelId.value = levelId
     currentQuestionIndex.value = 0
     correctCount.value = 0
+    
+    console.log('5. Generating questions...');
     questions.value = generateQuestions(levelId, TOTAL_QUESTIONS, currentOperator.value)
+    console.log('6. Questions generated successfully:', questions.value.length);
+    
     answered.value = false
     selectedOption.value = null
     timerSeconds.value = 30
     clearTimer()
+    
+    console.log('7. Triggering screen change...');
     showScreen('screen-quiz')
+    
     mascotSpeech.value = 'Ayo, pasti bisa! 💪'
     mascotMouthClass.value = 'happy'
     nextTick(renderQuestion)
+    console.log('8. Quiz started successfully!');
+    
+  } catch (err) {
+    console.error('🚨 CRITICAL ERROR in startQuiz:', err);
   }
+}
 
   function renderQuestion() {
     if (currentQuestionIndex.value >= TOTAL_QUESTIONS) {
@@ -344,12 +355,16 @@ export function useQuiz() {
     startQuiz(currentLevelId.value)
   }
 
-  function goToNextLevel() {
-    const next = currentLevelId.value + 1
-    if (next > 4) return
-    if (!isLevelAccessible(currentOperator.value, next)) return
-    startQuiz(next)
+function goToNextLevel() {
+  // Use the computed property above as an impenetrable shield
+  // Even if the button is visible and clicked, this stops it dead
+  if (!canGoNextLevel.value) {
+    return 
   }
+  
+  const next = currentLevelId.value + 1
+  startQuiz(next)
+}
 
   return {
     currentMode,
