@@ -19,39 +19,37 @@ const { mascotSpeech, mascotMouthClass, onMascotClick } = useMascot()
 const { showScreen } = useNavigation()
 const { getStars, isLevelUnlocked } = useStars()
 const { currentOperator, modeBadgeText, startQuiz } = useQuiz()
-const { isLevelAccessible, isLoggedIn } = useAuth()
+const { userTier, isOperatorUnlocked, isLevelAccessible } = useAuth()
 
 function levelLocked(lvl) {
-  const op = currentOperator.value
-  const accessible = isLevelAccessible(op, lvl.id)
-  const unlocked = isLevelUnlocked(lvl.id, op)
+  // 1. Satuan (Level 1) is always visually unlocked
+  if (lvl.id === 1) return false
 
-  // This will print the background math to your console
-  console.log(`Level ${lvl.id} | Accessible: ${accessible} | Unlocked: ${unlocked}`)
+  // 2. STRICT GUEST BLOCK: If they are a guest, lock Puluhan, Ratusan, Ribuan
+  if (userTier.value === 'guest') return true
 
-  // Force Level 1 (Satuan) to always visually unlock
-  if (lvl.id == 1) return false 
-  
-  if (!accessible) return true
-  if (!unlocked) return true
+  // 3. OPERATION BLOCK: If they are not subscribed to this specific math operation
+  if (!isOperatorUnlocked(currentOperator.value)) return true
+
+  // 4. PROGRESSION BLOCK: If they haven't earned 3 stars in the previous level
+  if (!isLevelUnlocked(lvl.id, currentOperator.value)) return true
+
   return false
 }
 
-function forceStartQuiz(lvl) {
-  // 1. Absolute blocker: Guests cannot click Level 2 or higher
-  if (lvl.id > 1 && !isLoggedIn.value) {
-    mascotSpeech.value = 'Daftar akun atau login dulu untuk membuka level Puluhan! 🔒'
+function onLevelClick(lvl) {
+  if (levelLocked(lvl)) {
+    if (userTier.value === 'guest' && lvl.id > 1) {
+      mascotSpeech.value = 'Level ini khusus untuk akun Premium! 👑'
+    } else if (!isOperatorUnlocked(currentOperator.value)) {
+      mascotSpeech.value = 'Operasi ini belum terbuka untuk akunmu! 🔒'
+    } else {
+      mascotSpeech.value = 'Dapatkan 3 bintang di level sebelumnya dulu ya! ⭐'
+    }
     mascotMouthClass.value = ''
-    return 
+    return // Stops the quiz from starting
   }
-
-  // 2. Standard blocker: Logged-in users who haven't passed the previous level
-  if (levelLocked(lvl) && lvl.id != 1) {
-    mascotSpeech.value = 'Dapatkan 3 bintang di level sebelumnya dulu ya! ⭐'
-    mascotMouthClass.value = ''
-    return
-  }
-
+  
   startQuiz(lvl.id)
 }
 
@@ -80,7 +78,7 @@ function getLevelStars(lvl) {
       <div class="level-grid">
   <div v-for="lvl in LEVELS" :key="lvl.id"
     :class="['level-card', { locked: levelLocked(lvl) }]"
-    @click="forceStartQuiz(lvl)"> <!-- CHANGED HERE -->
+    @click="onLevelClick(lvl)"> <!-- CHANGED HERE -->
     
     <div class="level-icon">{{ lvl.icon }}</div>
     <div class="level-title">{{ lvl.name }}</div>

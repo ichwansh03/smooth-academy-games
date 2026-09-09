@@ -24,7 +24,7 @@ const quizCardWiggle = ref(false)
 const starsEarned = ref(0)
 
 export function useQuiz() {
-  const { currentUser, isLoggedIn, isLevelAccessible } = useAuth()
+  const { currentUser, isLoggedIn, isLevelAccessible, userTier } = useAuth()
   const { setStars, fetchStarsFromApi } = useStars()
   const { mascotSpeech, mascotMouthClass } = useMascot()
   const { showScreen } = useNavigation()
@@ -106,11 +106,11 @@ export function useQuiz() {
   })
 
 const canGoNextLevel = computed(() => {
+  // GUEST BLOCK: Guests can never proceed to the next level
+  if (userTier.value === 'guest') return false
+
   if (starsEarned.value < 3) return false
   if (currentLevelId.value >= 4) return false
-  
-  // GUEST BLOCKER: If not logged in, immediately return false
-  if (!isLoggedIn.value) return false 
 
   const nextLevel = currentLevelId.value + 1
   return isLevelAccessible(currentOperator.value, nextLevel)
