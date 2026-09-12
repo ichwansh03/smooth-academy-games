@@ -81,7 +81,7 @@ COPY src src
 RUN mvn package -DskipTests -q
 
 ## Runtime stage
-FROM registry.access.redhat.com/ubi9/openjdk-25-runtime:1.24-3.1788187378
+FROM registry.access.redhat.com/ubi9/openjdk-25-runtime:1.24-3.1788862449
 ENV LANGUAGE='en_US:en'
 
 COPY --from=build /app/target/quarkus-app/lib/ /deployments/lib/
